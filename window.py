@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from PIL import Image, ImageTk
 import pickle
 import numpy as np
 
@@ -16,6 +17,7 @@ crop_map={
                               15:'Potato', 16:'Onion', 17:'Tomato',18: 'Garlic', 19:'Pulses'
 }
 
+
 def predict_crop():
     try:
         # Get user input
@@ -23,14 +25,24 @@ def predict_crop():
         humidity = float(humidity_entry.get())
         soil_ph = float(soil_ph_entry.get())
         rainfall = float(rainfall_entry.get())
+
+        # Validate input
+        if temperature >= 60 or humidity >= 100 or soil_ph >= 10 or rainfall >= 300:
+            result_label.config(text="Error: Input values exceed allowed limits.")
+            return
         
         # Prepare input for the model
         input_features = np.array([[temperature, humidity, soil_ph, rainfall]])
-        predicted_label=model.predict(input_features)[0]
-        predicted_crop = crop_map.get(predicted_label,"unknown crop")
-        
+        predicted_label = model.predict(input_features)[0]
+        predicted_crop = crop_map.get(predicted_label, "unknown crop")
+
         # Display prediction
         result_label.config(text=f"Recommended Crop: {predicted_crop}")
+
+    except ValueError:
+        result_label.config(text="Error: Please enter valid numerical values.")
+
+        
     except Exception as e:
         messagebox.showerror("Error", f"Invalid Input: {e}")
 
@@ -63,6 +75,8 @@ predict_button.pack(pady=10)
 # Label to Display Result
 result_label = tk.Label(root, text="", font=("Arial", 12, "bold"))
 result_label.pack()
+
+
 
 # Run the application
 root.mainloop()
